@@ -485,6 +485,7 @@ export const EN_TRANSLATIONS: Record<string, string> = {
   'emailConfig.ruleType': 'Rule Type',
   'emailConfig.ruleValue': 'Rule Value',
   'emailConfig.targetProject': 'Target Project',
+  'emailConfig.status': 'Status',
   'emailConfig.defaultPriority': 'Default Priority',
   'emailConfig.defaultStatus': 'Default Status',
   'emailConfig.ruleActive': 'Rule is active',
