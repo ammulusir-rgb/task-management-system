@@ -45,7 +45,7 @@ class TaskViewSet(viewsets.ModelViewSet):
                 project__members__is_active=True,
             )
             .select_related("assignee", "reporter", "column", "project", "parent")
-            .prefetch_related("subtasks", "tags")
+            .prefetch_related("subtasks")
             .annotate(
                 _comment_count=Count("comments", distinct=True),
                 _attachment_count=Count("attachments", distinct=True),

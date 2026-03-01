@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '@env';
 import {
   Notification,
@@ -19,23 +20,25 @@ export class NotificationService {
   }
 
   getUnreadCount(): Observable<{ unread_count: number }> {
-    return this.http.get<{ unread_count: number }>(
-      `${this.API}/unread_count/`
+    return this.http.get<{ count: number }>(
+      `${this.API}/unread-count/`
+    ).pipe(
+      map(res => ({ unread_count: res.count }))
     );
   }
 
   markRead(id: string): Observable<Notification> {
     return this.http.post<Notification>(
-      `${this.API}/${id}/mark_read/`,
+      `${this.API}/${id}/mark-read/`,
       {}
     );
   }
 
   markAllRead(): Observable<any> {
-    return this.http.post(`${this.API}/mark_all_read/`, {});
+    return this.http.post(`${this.API}/mark-all-read/`, {});
   }
 
   clearRead(): Observable<any> {
-    return this.http.post(`${this.API}/clear_read/`, {});
+    return this.http.delete(`${this.API}/clear-read/`);
   }
 }

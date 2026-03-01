@@ -22,7 +22,15 @@ export class TaskService {
     if (params) {
       Object.keys(params).forEach((key) => {
         if (params[key] != null && params[key] !== '') {
-          httpParams = httpParams.set(key, params[key]);
+          const value = params[key].toString();
+          // MultipleChoiceFilter expects repeated params, not comma-separated
+          if (value.includes(',')) {
+            value.split(',').forEach((v: string) => {
+              httpParams = httpParams.append(key, v.trim());
+            });
+          } else {
+            httpParams = httpParams.set(key, value);
+          }
         }
       });
     }
@@ -56,7 +64,7 @@ export class TaskService {
     columnId: string
   ): Observable<{ moved_count: number }> {
     return this.http.post<{ moved_count: number }>(
-      `${this.API}/bulk_move/`,
+      `${this.API}/bulk-move/`,
       { task_ids: taskIds, column_id: columnId }
     );
   }
