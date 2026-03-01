@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+.card-custom {
+  transition: transform var(--transition-fast);
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}

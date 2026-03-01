@@ -1,0 +1,416 @@
+<div class="page-container">
+  <h2 class="mb-4">{{ 'emailConfig.title' | translate }}</h2>
+
+  @if (loading()) {
+    <app-loading-spinner />
+  } @else {
+    <!-- Email Configuration Form -->
+    <div class="card-custom p-4 mb-4">
+      <h5 class="mb-3">{{ 'emailConfig.serverSettings' | translate }}</h5>
+      
+      <form [formGroup]="configForm" (ngSubmit)="saveConfiguration()">
+        <!-- IMAP Settings -->
+        <div class="mb-4">
+          <div class="form-check mb-3">
+            <input 
+              class="form-check-input" 
+              type="checkbox" 
+              id="imapEnabled"
+              formControlName="imap_enabled"
+              (change)="showImapForm.set(configForm.get('imap_enabled')?.value || false)"
+            />
+            <label class="form-check-label fw-semibold" for="imapEnabled">
+              {{ 'emailConfig.enableImap' | translate }}
+            </label>
+          </div>
+
+          @if (configForm.get('imap_enabled')?.value) {
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">{{ 'emailConfig.imapHost' | translate }}</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  formControlName="imap_host"
+                  placeholder="imap.gmail.com"
+                />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">{{ 'emailConfig.imapPort' | translate }}</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  formControlName="imap_port"
+                />
+              </div>
+              <div class="col-md-3">
+                <div class="form-check mt-4">
+                  <input 
+                    class="form-check-input" 
+                    type="checkbox" 
+                    id="imapSsl"
+                    formControlName="imap_use_ssl"
+                  />
+                  <label class="form-check-label" for="imapSsl">
+                    {{ 'emailConfig.useSSL' | translate }}
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'emailConfig.username' | translate }}</label>
+                <input 
+                  type="email" 
+                  class="form-control" 
+                  formControlName="imap_username"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'emailConfig.password' | translate }}</label>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  formControlName="imap_password"
+                  [placeholder]="config()?.imap_password ? '••••••••' : 'Enter password...'"
+                />
+              </div>
+            </div>
+          }
+        </div>
+
+        <hr class="my-4" />
+
+        <!-- SMTP Settings -->
+        <div class="mb-4">
+          <div class="form-check mb-3">
+            <input 
+              class="form-check-input" 
+              type="checkbox" 
+              id="smtpEnabled"
+              formControlName="smtp_enabled"
+              (change)="showSmtpForm.set(configForm.get('smtp_enabled')?.value || false)"
+            />
+            <label class="form-check-label fw-semibold" for="smtpEnabled">
+              {{ 'emailConfig.enableSmtp' | translate }}
+            </label>
+          </div>
+
+          @if (configForm.get('smtp_enabled')?.value) {
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">{{ 'emailConfig.smtpHost' | translate }}</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  formControlName="smtp_host"
+                  placeholder="smtp.gmail.com"
+                />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">{{ 'emailConfig.smtpPort' | translate }}</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  formControlName="smtp_port"
+                />
+              </div>
+              <div class="col-md-3">
+                <div class="form-check mt-4">
+                  <input 
+                    class="form-check-input" 
+                    type="checkbox" 
+                    id="smtpTls"
+                    formControlName="smtp_use_tls"
+                  />
+                  <label class="form-check-label" for="smtpTls">
+                    {{ 'emailConfig.useTLS' | translate }}
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'emailConfig.username' | translate }}</label>
+                <input 
+                  type="email" 
+                  class="form-control" 
+                  formControlName="smtp_username"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'emailConfig.password' | translate }}</label>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  formControlName="smtp_password"
+                  [placeholder]="config()?.smtp_password ? '••••••••' : 'Enter password...'"
+                />
+              </div>
+            </div>
+          }
+        </div>
+
+        <hr class="my-4" />
+
+        <!-- Email-to-Task Settings -->
+        <div class="mb-4">
+          <h6 class="mb-3">{{ 'emailConfig.taskSettings' | translate }}</h6>
+          
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">{{ 'emailConfig.taskEmailAddress' | translate }}</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                formControlName="task_email_address"
+                placeholder="tasks@yourcompany.com"
+              />
+              <small class="text-muted">{{ 'emailConfig.taskEmailHelp' | translate }}</small>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">{{ 'emailConfig.defaultProject' | translate }}</label>
+              <select class="form-select" formControlName="default_project">
+                <option value="">{{ 'emailConfig.selectProject' | translate }}</option>
+                @for (project of projects(); track project.id) {
+                  <option [value]="project.id">{{ project.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-12">
+              <div class="form-check">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  id="autoAssign"
+                  formControlName="auto_assign_reporter"
+                />
+                <label class="form-check-label" for="autoAssign">
+                  {{ 'emailConfig.autoAssignReporter' | translate }}
+                </label>
+              </div>
+              <small class="text-muted">{{ 'emailConfig.autoAssignHelp' | translate }}</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-2">
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="saving() || configForm.invalid"
+          >
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            }
+            {{ 'common.save' | translate }}
+          </button>
+          
+          @if (config()) {
+            <button 
+              type="button" 
+              class="btn btn-outline-secondary"
+              (click)="testConnection()"
+              [disabled]="testing()"
+            >
+              @if (testing()) {
+                <span class="spinner-border spinner-border-sm me-1"></span>
+              }
+              {{ 'emailConfig.testConnection' | translate }}
+            </button>
+            
+            <button 
+              type="button" 
+              class="btn btn-outline-info"
+              (click)="processEmails()"
+            >
+              {{ 'emailConfig.processNow' | translate }}
+            </button>
+          }
+        </div>
+      </form>
+    </div>
+
+    <!-- Email Rules -->
+    <div class="card-custom p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">{{ 'emailConfig.emailRules' | translate }}</h5>
+        <button 
+          type="button" 
+          class="btn btn-sm btn-success"
+          (click)="openRuleForm()"
+        >
+          <i class="bi bi-plus-lg me-1"></i>{{ 'emailConfig.addRule' | translate }}
+        </button>
+      </div>
+
+      @if (rules().length === 0) {
+        <div class="text-center text-muted py-4">
+          <i class="bi bi-envelope-plus fs-1 d-block mb-2"></i>
+          <p>{{ 'emailConfig.noRules' | translate }}</p>
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>{{ 'emailConfig.ruleName' | translate }}</th>
+                <th>{{ 'emailConfig.ruleType' | translate }}</th>
+                <th>{{ 'emailConfig.ruleValue' | translate }}</th>
+                <th>{{ 'emailConfig.targetProject' | translate }}</th>
+                <th>{{ 'emailConfig.status' | translate }}</th>
+                <th class="text-end">{{ 'common.actions' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (rule of rules(); track rule.id) {
+                <tr>
+                  <td>{{ rule.name }}</td>
+                  <td>{{ rule.rule_type | titlecase }}</td>
+                  <td><code>{{ rule.rule_value }}</code></td>
+                  <td>{{ rule.target_project?.name || 'Unknown Project' }}</td>
+                  <td>
+                    @if (rule.is_active) {
+                      <span class="badge bg-success">{{ 'common.active' | translate }}</span>
+                    } @else {
+                      <span class="badge bg-secondary">{{ 'common.inactive' | translate }}</span>
+                    }
+                  </td>
+                  <td class="text-end">
+                    <button 
+                      type="button" 
+                      class="btn btn-sm btn-outline-primary me-1"
+                      (click)="openRuleForm(rule)"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button 
+                      type="button" 
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="deleteRule(rule)"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Rule Form Modal -->
+@if (showRuleForm()) {
+  <div class="modal show d-block" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            {{ editingRule() ? ('emailConfig.editRule' | translate) : ('emailConfig.addRule' | translate) }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeRuleForm()"></button>
+        </div>
+        <form [formGroup]="ruleForm" (ngSubmit)="saveRule()">
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label">{{ 'emailConfig.ruleName' | translate }} *</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  formControlName="name"
+                  [ngClass]="{ 'is-invalid': ruleForm.get('name')?.invalid && ruleForm.get('name')?.touched }"
+                />
+              </div>
+              
+              <div class="col-md-6">
+                <label class="form-label">{{ 'emailConfig.ruleType' | translate }} *</label>
+                <select 
+                  class="form-select" 
+                  formControlName="rule_type"
+                  [ngClass]="{ 'is-invalid': ruleForm.get('rule_type')?.invalid && ruleForm.get('rule_type')?.touched }"
+                >
+                  @for (type of ruleTypes; track type.value) {
+                    <option [value]="type.value">{{ type.label }}</option>
+                  }
+                </select>
+              </div>
+              
+              <div class="col-md-6">
+                <label class="form-label">{{ 'emailConfig.ruleValue' | translate }} *</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  formControlName="rule_value"
+                  [ngClass]="{ 'is-invalid': ruleForm.get('rule_value')?.invalid && ruleForm.get('rule_value')?.touched }"
+                />
+              </div>
+              
+              <div class="col-12">
+                <label class="form-label">{{ 'emailConfig.targetProject' | translate }} *</label>
+                <select 
+                  class="form-select" 
+                  formControlName="target_project"
+                  [ngClass]="{ 'is-invalid': ruleForm.get('target_project')?.invalid && ruleForm.get('target_project')?.touched }"
+                >
+                  <option value="">{{ 'emailConfig.selectProject' | translate }}</option>
+                  @for (project of projects(); track project.id) {
+                    <option [value]="project.id">{{ project.name }}</option>
+                  }
+                </select>
+              </div>
+              
+              <div class="col-md-6">
+                <label class="form-label">{{ 'emailConfig.defaultPriority' | translate }}</label>
+                <select class="form-select" formControlName="default_priority">
+                  @for (priority of priorities; track priority) {
+                    <option [value]="priority">{{ ('priority.' + priority) | translate }}</option>
+                  }
+                </select>
+              </div>
+              
+              <div class="col-md-6">
+                <label class="form-label">{{ 'emailConfig.defaultStatus' | translate }}</label>
+                <select class="form-select" formControlName="default_status">
+                  @for (status of statuses; track status) {
+                    <option [value]="status">{{ ('status.' + status) | translate }}</option>
+                  }
+                </select>
+              </div>
+              
+              <div class="col-12">
+                <div class="form-check">
+                  <input 
+                    class="form-check-input" 
+                    type="checkbox" 
+                    id="ruleActive"
+                    formControlName="is_active"
+                  />
+                  <label class="form-check-label" for="ruleActive">
+                    {{ 'emailConfig.ruleActive' | translate }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button 
+              type="button" 
+              class="btn btn-outline-secondary" 
+              (click)="closeRuleForm()"
+            >
+              {{ 'common.cancel' | translate }}
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="ruleForm.invalid"
+            >
+              {{ 'common.save' | translate }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

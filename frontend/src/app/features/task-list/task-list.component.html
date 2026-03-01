@@ -1,0 +1,256 @@
+<div class="page-container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">{{ 'sidebar.myTasks' | translate }}</h2>
+    <div class="d-flex gap-2">
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        (click)="openCreateTaskModal()"
+        [disabled]="loading()"
+      >
+        <i class="bi bi-plus-lg me-1"></i>{{ 'taskList.createTask' | translate }}
+      </button>
+      <button
+        class="btn btn-sm"
+        [class.btn-primary]="onlyMyTasks()"
+        [class.btn-outline-secondary]="!onlyMyTasks()"
+        (click)="toggleMyTasks()"
+      >
+        <i class="bi bi-person-check me-1"></i>{{ i18n.t('taskList.assignedToMe') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card-custom p-3 mb-4">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input
+            type="text"
+            class="form-control"
+            [placeholder]="i18n.t('taskList.searchPlaceholder')"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="onSearch($event)"
+          />
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select form-select-sm" [ngModel]="statusFilter()" (ngModelChange)="onStatusChange($event)">
+          <option value="">{{ 'taskList.allStatuses' | translate }}</option>
+          @for (s of statuses; track s) {
+            <option [value]="s">{{ s | titlecase }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select form-select-sm" [ngModel]="priorityFilter()" (ngModelChange)="onPriorityChange($event)">
+          <option value="">{{ 'taskList.allPriorities' | translate }}</option>
+          @for (p of priorities; track p) {
+            <option [value]="p">{{ p | titlecase }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-md-2 text-end">
+        <span class="badge bg-light text-dark">{{ filteredTasks().length }} {{ 'common.tasks' | translate }}</span>
+      </div>
+    </div>
+  </div>
+
+  @if (loading() && page === 1) {
+    <app-loading-spinner />
+  } @else if (filteredTasks().length === 0) {
+    <app-empty-state
+      icon="bi-check2-square"
+      [title]="onlyMyTasks() ? i18n.t('taskList.noAssignedTasks') : i18n.t('taskList.noTasks')"
+      [subtitle]="i18n.t('taskList.noTasksSubtitle')"
+    />
+  } @else {
+    <div class="card-custom">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th class="ps-3" style="width: 120px;">{{ 'taskList.key' | translate }}</th>
+              <th>{{ 'taskList.title' | translate }}</th>
+              <th style="width: 120px;">{{ 'taskList.status' | translate }}</th>
+              <th style="width: 100px;">{{ 'taskList.priority' | translate }}</th>
+              <th style="width: 140px;">{{ 'taskList.dueDate' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (task of filteredTasks(); track task.id) {
+              <tr>
+                <td class="ps-3">
+                  <a [routerLink]="['/tasks', task.id]" class="text-muted small text-decoration-none fw-medium">
+                    {{ task.task_key }}
+                  </a>
+                </td>
+                <td>
+                  <a [routerLink]="['/tasks', task.id]" class="text-dark text-decoration-none">
+                    {{ task.title }}
+                  </a>
+                  @if (task.subtask_count > 0) {
+                    <span class="text-muted small ms-2">
+                      <i class="bi bi-diagram-3"></i> {{ task.subtask_count }}
+                    </span>
+                  }
+                  @if (task.comment_count > 0) {
+                    <span class="text-muted small ms-1">
+                      <i class="bi bi-chat"></i> {{ task.comment_count }}
+                    </span>
+                  }
+                </td>
+                <td><app-status-badge [status]="task.status" /></td>
+                <td><app-priority-badge [priority]="task.priority" /></td>
+                <td>
+                  @if (task.due_date) {
+                    <span class="small" [class.text-danger]="isOverdue(task.due_date)">
+                      {{ task.due_date | date:'mediumDate' }}
+                    </span>
+                  } @else {
+                    <span class="text-muted small">—</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    @if (hasMore()) {
+      <div class="text-center mt-3">
+        <button class="btn btn-sm btn-outline-secondary" (click)="loadMore()" [disabled]="loading()">
+          @if (loading()) {
+            <span class="spinner-border spinner-border-sm me-1"></span>
+          }
+          {{ 'common.loadMore' | translate }}
+        </button>
+      </div>
+    }
+  }
+</div>
+
+<!-- Create Task Modal -->
+@if (showCreateModal()) {
+  <div class="modal show d-block" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ 'taskForm.createTitle' | translate }}</h5>
+          <button type="button" class="btn-close" (click)="closeCreateModal()"></button>
+        </div>
+        <form [formGroup]="taskForm" (ngSubmit)="onSubmitTask()">
+          <div class="modal-body">
+            <div class="row g-3">
+              <!-- Project Selection -->
+              <div class="col-12">
+                <label class="form-label">{{ 'taskForm.project' | translate }} *</label>
+                <select 
+                  class="form-select" 
+                  formControlName="project"
+                  (change)="onProjectChange()"
+                  [ngClass]="{ 'is-invalid': taskFormSubmitted() && taskForm.get('project')?.invalid }"
+                >
+                  <option value="">{{ 'taskForm.selectProject' | translate }}</option>
+                  @for (project of availableProjects(); track project.id) {
+                    <option [value]="project.id">{{ project.name }}</option>
+                  }
+                </select>
+              </div>
+
+              <!-- Title -->
+              <div class="col-12">
+                <label class="form-label">{{ 'taskForm.title' | translate }} *</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  formControlName="title"
+                  [placeholder]="'taskForm.titlePlaceholder' | translate"
+                  [ngClass]="{ 'is-invalid': taskFormSubmitted() && taskForm.get('title')?.invalid }"
+                />
+              </div>
+
+              <!-- Row: Status, Priority, Assignee -->
+              <div class="col-md-4">
+                <label class="form-label">{{ 'taskForm.status' | translate }}</label>
+                <select class="form-select" formControlName="status">
+                  @for (status of statuses; track status) {
+                    <option [value]="status">{{ ('status.' + status) | translate }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">{{ 'taskForm.priority' | translate }}</label>
+                <select class="form-select" formControlName="priority">
+                  @for (priority of priorities; track priority) {
+                    <option [value]="priority">{{ ('priority.' + priority) | translate }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">{{ 'taskForm.assignee' | translate }}</label>
+                <select class="form-select" formControlName="assignee">
+                  <option value="">{{ 'taskForm.unassigned' | translate }}</option>
+                  @for (member of projectMembers(); track member.id) {
+                    <option [value]="member.id">{{ member.full_name }}</option>
+                  }
+                </select>
+              </div>
+
+              <!-- Description -->
+              <div class="col-12">
+                <label class="form-label">{{ 'taskForm.description' | translate }}</label>
+                <textarea 
+                  class="form-control" 
+                  formControlName="description" 
+                  rows="4"
+                  [placeholder]="'taskForm.descriptionPlaceholder' | translate"
+                ></textarea>
+              </div>
+
+              <!-- Due Date and Estimated Hours -->
+              <div class="col-md-6">
+                <label class="form-label">{{ 'taskForm.dueDate' | translate }}</label>
+                <input type="date" class="form-control" formControlName="due_date" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'taskForm.estimatedHours' | translate }}</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  formControlName="estimated_hours" 
+                  min="0" 
+                  step="0.5"
+                  [placeholder]="'taskForm.hoursPlaceholder' | translate"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button 
+              type="button" 
+              class="btn btn-outline-secondary" 
+              (click)="closeCreateModal()"
+              [disabled]="creatingTask()"
+            >
+              {{ 'common.cancel' | translate }}
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="creatingTask() || taskForm.invalid"
+            >
+              @if (creatingTask()) {
+                <span class="spinner-border spinner-border-sm me-1"></span>
+              }
+              {{ 'taskForm.createBtn' | translate }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

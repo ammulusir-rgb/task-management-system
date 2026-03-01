@@ -1,0 +1,8 @@
+:host {
+  display: block;
+}
+
+.list-group-item {
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}

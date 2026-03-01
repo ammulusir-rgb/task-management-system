@@ -1,0 +1,35 @@
+# ============================================================
+# Base requirements — shared across all environments
+# ============================================================
+
+# Django
+Django>=5.2,<5.3
+djangorestframework>=3.16,<3.17
+django-cors-headers>=4.7,<5.0
+django-filter>=25.1,<26.0
+drf-spectacular>=0.29,<0.30
+
+# Authentication
+djangorestframework-simplejwt>=5.5,<5.6
+
+# Database
+psycopg[binary]>=3.2,<4.0
+
+# Caching & Channels
+django-redis>=5.4,<6.0
+channels>=4.3,<5.0
+channels-redis>=4.2,<5.0
+daphne>=4.2,<5.0
+
+# Task Queue
+celery>=5.6,<5.7
+django-celery-beat>=2.7,<3.0
+
+# Utilities
+python-decouple>=3.8,<4.0
+Pillow>=11.2,<12.0
+bleach>=6.2,<7.0
+whitenoise>=6.9,<7.0
+
+# Monitoring
+django-health-check>=3.18,<4.0

@@ -1,0 +1,114 @@
+<div class="page-container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">{{ 'dashboard.title' | translate }}</h2>
+      <p class="text-muted mb-0">
+        {{ 'dashboard.welcome' | translate:{ name: authService.currentUser()?.first_name ?? '' } }}
+      </p>
+    </div>
+    <a routerLink="/projects/new" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-1"></i>{{ 'dashboard.newProject' | translate }}
+    </a>
+  </div>
+
+  @if (loading()) {
+    <app-loading-spinner />
+  } @else {
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-sm-6 col-lg-3">
+        <div class="card-custom p-3">
+          <div class="text-muted small mb-1">{{ 'dashboard.totalProjects' | translate }}</div>
+          <div class="fs-3 fw-bold">{{ projects().length }}</div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card-custom p-3">
+          <div class="text-muted small mb-1">{{ 'dashboard.myTasks' | translate }}</div>
+          <div class="fs-3 fw-bold">{{ myTasks().length }}</div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card-custom p-3">
+          <div class="text-muted small mb-1">{{ 'dashboard.inProgress' | translate }}</div>
+          <div class="fs-3 fw-bold text-primary">
+            {{ myTasks().filter(t => t.status === 'in_progress').length }}
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card-custom p-3">
+          <div class="text-muted small mb-1">{{ 'dashboard.overdue' | translate }}</div>
+          <div class="fs-3 fw-bold text-danger">
+            {{ overdueTasks().length }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Recent Projects -->
+      <div class="col-lg-6">
+        <div class="card-custom">
+          <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">{{ 'dashboard.recentProjects' | translate }}</h6>
+            <a routerLink="/projects" class="small">{{ 'common.viewAll' | translate }}</a>
+          </div>
+          <div class="p-3">
+            @for (project of projects().slice(0, 5); track project.id) {
+              <a
+                [routerLink]="['/projects', project.id]"
+                class="d-flex align-items-center py-2 text-decoration-none text-dark"
+              >
+                <div
+                  class="rounded d-flex align-items-center justify-content-center me-3 text-white fw-bold"
+                  style="width: 36px; height: 36px; background: var(--primary);"
+                >
+                  {{ project.prefix }}
+                </div>
+                <div class="flex-grow-1">
+                  <div class="fw-medium">{{ project.name }}</div>
+                  <div class="text-muted small">{{ project.task_count }} {{ 'common.tasks' | translate }}</div>
+                </div>
+                <span class="badge bg-light text-dark">{{ project.status }}</span>
+              </a>
+            } @empty {
+              <p class="text-muted text-center py-3">{{ 'dashboard.noProjects' | translate }}</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- My Tasks -->
+      <div class="col-lg-6">
+        <div class="card-custom">
+          <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">{{ 'dashboard.myTasksTitle' | translate }}</h6>
+            <a routerLink="/tasks" class="small">{{ 'common.viewAll' | translate }}</a>
+          </div>
+          <div class="p-3">
+            @for (task of myTasks().slice(0, 8); track task.id) {
+              <a
+                [routerLink]="['/tasks', task.id]"
+                class="d-flex align-items-center py-2 text-decoration-none text-dark"
+              >
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted small">{{ task.task_key }}</span>
+                    <span class="fw-medium">{{ task.title }}</span>
+                  </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <app-priority-badge [priority]="task.priority" />
+                  <app-status-badge [status]="task.status" />
+                </div>
+              </a>
+            } @empty {
+              <p class="text-muted text-center py-3">{{ 'dashboard.noTasks' | translate }}</p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

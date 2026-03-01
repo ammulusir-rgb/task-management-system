@@ -1,0 +1,94 @@
+@if (loading()) {
+  <app-loading-spinner />
+} @else if (board()) {
+  <div class="board-header px-4 py-2 d-flex align-items-center justify-content-between">
+    <div>
+      <h5 class="mb-0">{{ board()!.name }}</h5>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-outline-secondary" (click)="addColumn()">
+        <i class="bi bi-plus-lg me-1"></i>{{ 'board.addColumn' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <div class="kanban-container px-4">
+    @for (column of board()!.columns; track column.id) {
+      <div class="kanban-column">
+        <div class="kanban-column-header">
+          <span>
+            @if (column.color) {
+              <span
+                class="d-inline-block rounded-circle me-2"
+                [style.width.px]="8"
+                [style.height.px]="8"
+                [style.background-color]="column.color"
+              ></span>
+            }
+            {{ column.name }}
+            <span class="ms-1 badge rounded-pill bg-light text-dark">
+              {{ getColumnTasks(column.id).length }}
+            </span>
+          </span>
+          @if (column.wip_limit) {
+            <span
+              class="small"
+              [class.text-danger]="getColumnTasks(column.id).length > column.wip_limit"
+            >
+              {{ 'board.wip' | translate }}: {{ column.wip_limit }}
+            </span>
+          }
+        </div>
+
+        <div
+          class="kanban-column-body"
+          cdkDropList
+          [cdkDropListData]="getColumnTasks(column.id)"
+          [id]="'column-' + column.id"
+          [cdkDropListConnectedTo]="connectedDropLists()"
+          (cdkDropListDropped)="onTaskDrop($event, column)"
+        >
+          @for (task of getColumnTasks(column.id); track task.id) {
+            <div class="kanban-card" cdkDrag [cdkDragData]="task">
+              <a
+                [routerLink]="['/tasks', task.id]"
+                class="text-decoration-none text-dark"
+              >
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <span class="text-muted small">{{ task.task_key }}</span>
+                  <app-priority-badge [priority]="task.priority" />
+                </div>
+                <div class="fw-medium small mb-2">{{ task.title }}</div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center gap-2 small text-muted">
+                    @if (task.subtask_count > 0) {
+                      <span><i class="bi bi-list-check"></i> {{ task.subtask_count }}</span>
+                    }
+                    @if (task.comment_count > 0) {
+                      <span><i class="bi bi-chat-left-text"></i> {{ task.comment_count }}</span>
+                    }
+                    @if (task.due_date) {
+                      <span
+                        [class.text-danger]="isOverdue(task.due_date)"
+                      >
+                        <i class="bi bi-calendar-event"></i>
+                        {{ formatDate(task.due_date) }}
+                      </span>
+                    }
+                  </div>
+                  @if (task.assignee) {
+                    <app-user-avatar
+                      [name]="task.assignee.first_name + ' ' + task.assignee.last_name"
+                      [avatarUrl]="task.assignee.avatar"
+                      size="sm"
+                    />
+                  }
+                </div>
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}

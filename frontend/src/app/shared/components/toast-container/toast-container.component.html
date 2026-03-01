@@ -1,0 +1,23 @@
+<div class="toast-container">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div
+      class="toast show align-items-center border-0"
+      [ngClass]="{
+        'text-bg-success': toast.type === 'success',
+        'text-bg-danger': toast.type === 'error',
+        'text-bg-warning': toast.type === 'warning',
+        'text-bg-info': toast.type === 'info'
+      }"
+      role="alert"
+    >
+      <div class="d-flex">
+        <div class="toast-body">{{ toast.message }}</div>
+        <button
+          type="button"
+          class="btn-close btn-close-white me-2 m-auto"
+          (click)="toastService.dismiss(toast.id)"
+        ></button>
+      </div>
+    </div>
+  }
+</div>

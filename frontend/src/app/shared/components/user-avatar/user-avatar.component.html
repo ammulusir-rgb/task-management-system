@@ -1,0 +1,19 @@
+@if (avatarUrl()) {
+  <img
+    [src]="avatarUrl()"
+    [alt]="name()"
+    class="rounded-circle"
+    [style.width.px]="sizePx()"
+    [style.height.px]="sizePx()"
+  />
+} @else {
+  <div
+    class="rounded-circle d-flex align-items-center justify-content-center text-white fw-semibold"
+    [style.width.px]="sizePx()"
+    [style.height.px]="sizePx()"
+    [style.font-size.px]="sizePx() * 0.4"
+    [style.background-color]="bgColor()"
+  >
+    {{ initials() }}
+  </div>
+}

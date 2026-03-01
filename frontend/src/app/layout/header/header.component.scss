@@ -1,0 +1,46 @@
+.app-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: var(--sidebar-width);
+  height: var(--header-height);
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  z-index: 100;
+  transition: left var(--transition-normal);
+}
+
+:host-context(.sidebar-collapsed) .app-header {
+  left: var(--sidebar-collapsed-width);
+}
+
+.search-box {
+  width: 320px;
+
+  .form-control:focus {
+    box-shadow: none;
+  }
+}
+
+.lang-dropdown {
+  min-width: 140px;
+
+  .dropdown-item {
+    font-size: 0.875rem;
+
+    &.active {
+      background: var(--primary-color, #0d6efd);
+      color: #fff;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    left: 0;
+  }
+}

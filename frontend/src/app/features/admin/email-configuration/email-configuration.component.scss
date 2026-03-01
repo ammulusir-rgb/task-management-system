@@ -1,0 +1,55 @@
+// Email Configuration Component Styles
+
+.card-custom {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-check-label {
+  color: var(--text-primary);
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+code {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.85em;
+}
+
+.table {
+  --bs-table-bg: var(--bg-primary);
+  --bs-table-color: var(--text-primary);
+}
+
+.table-hover > tbody > tr:hover {
+  --bs-table-hover-bg: var(--bg-tertiary);
+}
+
+.btn-close {
+  filter: var(--bs-btn-close-white-filter, none);
+}
+
+.modal-content {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border-color);
+}

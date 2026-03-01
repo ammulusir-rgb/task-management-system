@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+.card {
+  transition: box-shadow var(--transition-fast);
+}
+
+.display-6 {
+  font-size: 2rem;
+}

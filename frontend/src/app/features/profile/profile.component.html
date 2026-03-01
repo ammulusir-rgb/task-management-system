@@ -1,0 +1,231 @@
+<div class="page-container">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h2 class="mb-4">{{ 'profile.title' | translate }}</h2>
+
+      <!-- Profile Card -->
+      <div class="card-custom p-4 mb-4">
+        <div class="d-flex align-items-center mb-4">
+          <app-user-avatar
+            [name]="user()?.full_name ?? ''"
+            [avatarUrl]="user()?.avatar ?? null"
+            size="lg"
+          />
+          <div class="ms-3">
+            <h5 class="mb-0">{{ user()?.full_name }}</h5>
+            <span class="text-muted">{{ user()?.email }}</span>
+            <br />
+            <span class="badge bg-primary-subtle text-primary mt-1">{{ user()?.role }}</span>
+          </div>
+        </div>
+
+        <h6 class="fw-semibold mb-3">{{ 'profile.personalInfo' | translate }}</h6>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">{{ 'auth.firstName' | translate }}</label>
+            <input
+              type="text"
+              class="form-control"
+              [ngModel]="firstName()"
+              (ngModelChange)="firstName.set($event)"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ 'auth.lastName' | translate }}</label>
+            <input
+              type="text"
+              class="form-control"
+              [ngModel]="lastName()"
+              (ngModelChange)="lastName.set($event)"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ 'profile.phone' | translate }}</label>
+            <input
+              type="tel"
+              class="form-control"
+              [ngModel]="phone()"
+              (ngModelChange)="phone.set($event)"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ 'profile.jobTitle' | translate }}</label>
+            <input
+              type="text"
+              class="form-control"
+              [ngModel]="jobTitle()"
+              (ngModelChange)="jobTitle.set($event)"
+            />
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex align-items-center gap-2">
+          <button class="btn btn-primary" (click)="saveProfile()" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            }
+            {{ 'common.save' | translate }}
+          </button>
+          @if (saved()) {
+            <span class="text-success small">
+              <i class="bi bi-check-circle me-1"></i>{{ 'profile.saved' | translate }}
+            </span>
+          }
+          @if (error()) {
+            <span class="text-danger small">{{ error() }}</span>
+          }
+        </div>
+      </div>
+
+      <!-- Change Password -->
+      <div class="card-custom p-4">
+        <h6 class="fw-semibold mb-3">{{ 'profile.changePassword' | translate }}</h6>
+
+        <div class="row g-3">
+          <div class="col-md-12">
+            <label class="form-label">{{ 'profile.currentPassword' | translate }}</label>
+            <input
+              type="password"
+              class="form-control"
+              [ngModel]="oldPassword()"
+              (ngModelChange)="oldPassword.set($event)"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ 'profile.newPassword' | translate }}</label>
+            <input
+              type="password"
+              class="form-control"
+              [ngModel]="newPassword()"
+              (ngModelChange)="newPassword.set($event)"
+            />
+            <small class="text-muted">{{ 'auth.minPasswordLength' | translate }}</small>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ 'auth.confirmPassword' | translate }}</label>
+            <input
+              type="password"
+              class="form-control"
+              [ngModel]="confirmPassword()"
+              (ngModelChange)="confirmPassword.set($event)"
+            />
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex align-items-center gap-2">
+          <button
+            class="btn btn-outline-primary"
+            (click)="changePassword()"
+            [disabled]="changingPassword() || !oldPassword() || !newPassword() || !confirmPassword()"
+          >
+            @if (changingPassword()) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            }
+            {{ 'profile.changePassword' | translate }}
+          </button>
+          @if (passwordSuccess()) {
+            <span class="text-success small">
+              <i class="bi bi-check-circle me-1"></i>{{ 'profile.passwordChanged' | translate }}
+            </span>
+          }
+          @if (passwordError()) {
+            <span class="text-danger small">{{ passwordError() }}</span>
+          }
+        </div>
+      </div>
+
+      <!-- Preferences -->
+      <div class="card-custom p-4 mt-4">
+        <h6 class="fw-semibold mb-3">{{ 'profile.preferences' | translate }}</h6>
+        
+        <div class="row g-3">
+          <!-- Theme Selection -->
+          <div class="col-md-6">
+            <label class="form-label">{{ 'profile.theme' | translate }}</label>
+            <select 
+              class="form-select" 
+              [ngModel]="selectedTheme()"
+              (ngModelChange)="onThemeChange($event)"
+            >
+              <option value="light">{{ 'profile.lightTheme' | translate }}</option>
+              <option value="dark">{{ 'profile.darkTheme' | translate }}</option>
+              <option value="auto">{{ 'profile.autoTheme' | translate }}</option>
+            </select>
+            <small class="text-muted">{{ 'profile.themeHelp' | translate }}</small>
+          </div>
+
+          <!-- Language Selection -->
+          <div class="col-md-6">
+            <label class="form-label">{{ 'profile.language' | translate }}</label>
+            <select 
+              class="form-select" 
+              [ngModel]="selectedLanguage()"
+              (ngModelChange)="onLanguageChange($event)"
+            >
+              <option value="en">English</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+            </select>
+            <small class="text-muted">{{ 'profile.languageHelp' | translate }}</small>
+          </div>
+
+          <!-- Email Notifications -->
+          <div class="col-12">
+            <div class="form-check">
+              <input 
+                class="form-check-input" 
+                type="checkbox" 
+                id="emailNotifications"
+                [ngModel]="emailNotifications()"
+                (ngModelChange)="emailNotifications.set($event)"
+              />
+              <label class="form-check-label" for="emailNotifications">
+                {{ 'profile.emailNotifications' | translate }}
+              </label>
+            </div>
+            <small class="text-muted">{{ 'profile.emailNotificationsHelp' | translate }}</small>
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex align-items-center gap-2">
+          <button
+            class="btn btn-primary"
+            (click)="savePreferences()"
+            [disabled]="savingPreferences()"
+          >
+            @if (savingPreferences()) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            }
+            {{ 'profile.savePreferences' | translate }}
+          </button>
+          @if (preferencesSuccess()) {
+            <span class="text-success small">
+              <i class="bi bi-check-circle me-1"></i>{{ 'profile.preferencesSaved' | translate }}
+            </span>
+          }
+          @if (preferencesError()) {
+            <span class="text-danger small">{{ preferencesError() }}</span>
+          }
+        </div>
+      </div>
+
+      <!-- Account Info (read-only) -->
+      <div class="card-custom p-4 mt-4">
+        <h6 class="fw-semibold mb-3">{{ 'profile.accountInfo' | translate }}</h6>
+        <div class="row g-2">
+          <div class="col-6"><span class="text-muted">{{ 'profile.memberSince' | translate }}</span></div>
+          <div class="col-6">{{ user()?.date_joined }}</div>
+          <div class="col-6"><span class="text-muted">{{ 'profile.accountStatus' | translate }}</span></div>
+          <div class="col-6">
+            @if (user()?.is_active) {
+              <span class="badge bg-success-subtle text-success">{{ 'profile.active' | translate }}</span>
+            } @else {
+              <span class="badge bg-danger-subtle text-danger">{{ 'profile.inactive' | translate }}</span>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

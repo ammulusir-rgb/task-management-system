@@ -1,0 +1,51 @@
+<aside class="sidebar" [class.collapsed]="collapsed()">
+  <div class="sidebar-brand">
+    <a routerLink="/dashboard" class="d-flex align-items-center text-decoration-none">
+      <i class="bi bi-kanban fs-4 text-primary"></i>
+      @if (!collapsed()) {
+        <span class="ms-2 fw-bold text-dark">{{ i18n.t('shell.appName') }}</span>
+      }
+    </a>
+    <button class="btn btn-link p-0 d-none d-md-block" (click)="toggleCollapse.emit()">
+      <i class="bi" [class.bi-chevron-left]="!collapsed()" [class.bi-chevron-right]="collapsed()"></i>
+    </button>
+  </div>
+
+  <!-- Organization Selector -->
+  @if (!collapsed() && organizations().length > 0) {
+    <div class="px-3 mb-3">
+      <select class="form-select form-select-sm" (change)="onOrgChange($event)">
+        @for (org of organizations(); track org.id) {
+          <option [value]="org.id">{{ org.name }}</option>
+        }
+      </select>
+    </div>
+  }
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+    @for (item of navItems; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        class="nav-item"
+        [title]="i18n.t(item.labelKey)"
+      >
+        <i class="bi {{ item.icon }}"></i>
+        @if (!collapsed()) {
+          <span>{{ i18n.t(item.labelKey) }}</span>
+        }
+      </a>
+    }
+  </nav>
+
+  <!-- Bottom section -->
+  <div class="sidebar-footer">
+    <a routerLink="/admin" routerLinkActive="active" class="nav-item" [title]="i18n.t('sidebar.settings')">
+      <i class="bi bi-gear"></i>
+      @if (!collapsed()) {
+        <span>{{ i18n.t('sidebar.settings') }}</span>
+      }
+    </a>
+  </div>
+</aside>

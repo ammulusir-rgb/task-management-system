@@ -1,0 +1,41 @@
+:host {
+  display: inline-flex;
+}
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25em 0.65em;
+  border-radius: 0.375rem;
+  letter-spacing: 0.02em;
+}
+
+.badge-status-backlog {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.badge-status-todo {
+  background-color: #cfe2ff;
+  color: #084298;
+}
+
+.badge-status-in_progress {
+  background-color: #fff3cd;
+  color: #664d03;
+}
+
+.badge-status-in_review {
+  background-color: #e2d9f3;
+  color: #59359a;
+}
+
+.badge-status-done {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.badge-status-cancelled {
+  background-color: #f8d7da;
+  color: #842029;
+}

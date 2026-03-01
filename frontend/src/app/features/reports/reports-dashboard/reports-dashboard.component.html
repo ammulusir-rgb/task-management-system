@@ -1,0 +1,160 @@
+@if (loading()) {
+  <app-loading-spinner />
+} @else {
+  <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <nav class="mb-1">
+          <ol class="breadcrumb small mb-0">
+            <li class="breadcrumb-item"><a routerLink="/dashboard">{{ 'dashboard.title' | translate }}</a></li>
+            <li class="breadcrumb-item active">{{ 'reports.title' | translate }}</li>
+          </ol>
+        </nav>
+        <h4 class="mb-0">{{ 'reports.projectReports' | translate }}</h4>
+      </div>
+      <button class="btn btn-outline-primary btn-sm" (click)="exportCsv()">
+        <i class="bi bi-download me-1"></i>{{ 'reports.exportCsv' | translate }}
+      </button>
+    </div>
+
+    <!-- Summary Cards -->
+    @if (summary()) {
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="text-muted small">{{ 'reports.totalTasks' | translate }}</div>
+              <div class="display-6 fw-bold text-primary">{{ summary()!.total_tasks }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="text-muted small">{{ 'reports.completed' | translate }}</div>
+              <div class="display-6 fw-bold text-success">{{ summary()!.completed_tasks }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="text-muted small">{{ 'reports.overdue' | translate }}</div>
+              <div class="display-6 fw-bold text-danger">{{ summary()!.overdue_tasks }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="text-muted small">{{ 'reports.completion' | translate }}</div>
+              <div class="display-6 fw-bold">
+                {{ summary()!.completion_rate | number:'1.0-0' }}%
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Charts Row 1 -->
+    <div class="row g-4 mb-4">
+      <!-- Tasks by Status -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-white border-0 fw-medium">{{ 'reports.tasksByStatus' | translate }}</div>
+          <div class="card-body">
+            @if (statusData().length) {
+              <ngx-charts-pie-chart
+                [results]="statusData()"
+                [scheme]="statusColorScheme"
+                [labels]="true"
+                [doughnut]="true"
+                [view]="[450, 280]"
+              />
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Tasks by Priority -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-white border-0 fw-medium">{{ 'reports.tasksByPriority' | translate }}</div>
+          <div class="card-body">
+            @if (priorityData().length) {
+              <ngx-charts-bar-vertical
+                [results]="priorityData()"
+                [scheme]="priorityColorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [view]="[450, 280]"
+              />
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row g-4 mb-4">
+      <!-- Burndown -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-white border-0 fw-medium">{{ 'reports.burndown' | translate }}</div>
+          <div class="card-body">
+            @if (burndownData().length) {
+              <ngx-charts-line-chart
+                [results]="burndownData()"
+                [scheme]="lineColorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [timeline]="true"
+                [view]="[450, 280]"
+              />
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Velocity -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-white border-0 fw-medium">{{ 'reports.velocity' | translate }}</div>
+          <div class="card-body">
+            @if (velocityData().length) {
+              <ngx-charts-bar-vertical
+                [results]="velocityData()"
+                [scheme]="lineColorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [view]="[450, 280]"
+              />
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assignee Workload -->
+    <div class="row g-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white border-0 fw-medium">{{ 'reports.assigneeWorkload' | translate }}</div>
+          <div class="card-body">
+            @if (assigneeData().length) {
+              <ngx-charts-bar-horizontal
+                [results]="assigneeData()"
+                [scheme]="assigneeColorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [view]="[900, Math.max(200, assigneeData().length * 40)]"
+              />
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

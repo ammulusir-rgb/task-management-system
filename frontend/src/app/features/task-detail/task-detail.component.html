@@ -1,0 +1,322 @@
+@if (loading()) {
+  <app-loading-spinner />
+} @else if (task()) {
+  <div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav class="mb-3">
+      <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a routerLink="/dashboard">{{ 'dashboard.title' | translate }}</a></li>
+        <li class="breadcrumb-item active">{{ task()!.task_key }}</li>
+      </ol>
+    </nav>
+
+    <div class="row g-4">
+      <!-- Main content -->
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body">
+            <div class="d-flex gap-2 align-items-center mb-2">
+              <span class="text-muted small">{{ task()!.task_key }}</span>
+              <app-status-badge [status]="task()!.status" />
+              <app-priority-badge [priority]="task()!.priority" />
+            </div>
+
+            @if (editingTitle()) {
+              <input
+                class="form-control form-control-lg fw-bold mb-2"
+                [(ngModel)]="titleDraft"
+                (keydown.enter)="saveTitle()"
+                (keydown.escape)="cancelEditTitle()"
+                (blur)="saveTitle()"
+              />
+            } @else {
+              <h4
+                class="fw-bold mb-3"
+                (dblclick)="startEditTitle()"
+                role="button"
+                [title]="'taskDetail.dblClickEdit' | translate"
+              >
+                {{ task()!.title }}
+              </h4>
+            }
+
+            <!-- Description -->
+            <div class="mb-4">
+              <h6 class="text-muted small text-uppercase mb-2">{{ 'taskDetail.description' | translate }}</h6>
+              @if (editingDescription()) {
+                <textarea
+                  class="form-control mb-2"
+                  rows="5"
+                  [(ngModel)]="descriptionDraft"
+                ></textarea>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-primary" (click)="saveDescription()">{{ 'common.save' | translate }}</button>
+                  <button class="btn btn-sm btn-outline-secondary" (click)="cancelEditDescription()">{{ 'common.cancel' | translate }}</button>
+                </div>
+              } @else {
+                <div
+                  class="description-area border rounded p-3 bg-light"
+                  (click)="startEditDescription()"
+                >
+                  @if (task()!.description) {
+                    <p class="mb-0" style="white-space: pre-wrap;">{{ task()!.description }}</p>
+                  } @else {
+                    <span class="text-muted">{{ 'taskDetail.addDescription' | translate }}</span>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Subtasks -->
+            <div class="mb-4">
+              <h6 class="text-muted small text-uppercase mb-2">
+                {{ 'taskDetail.subtasks' | translate }}
+                @if (subtasks().length > 0) {
+                  <span class="badge bg-light text-dark ms-1">{{ subtasks().length }}</span>
+                }
+              </h6>
+              @for (sub of subtasks(); track sub.id) {
+                <div class="d-flex align-items-center gap-2 mb-2 p-2 border rounded">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    [checked]="sub.status === 'done'"
+                    (change)="toggleSubtask(sub)"
+                  />
+                  <a [routerLink]="['/tasks', sub.id]" class="text-decoration-none flex-grow-1">
+                    <span [class.text-decoration-line-through]="sub.status === 'done'">
+                      {{ sub.title }}
+                    </span>
+                  </a>
+                  <app-priority-badge [priority]="sub.priority" />
+                </div>
+              }
+            </div>
+
+            <!-- Comments -->
+            <div class="mb-4">
+              <h6 class="text-muted small text-uppercase mb-2">
+                {{ 'taskDetail.comments' | translate }}
+                @if (comments().length > 0) {
+                  <span class="badge bg-light text-dark ms-1">{{ comments().length }}</span>
+                }
+              </h6>
+
+              <div class="d-flex gap-2 mb-3">
+                <textarea
+                  class="form-control"
+                  rows="2"
+                  [placeholder]="'taskDetail.writeComment' | translate"
+                  [(ngModel)]="newComment"
+                ></textarea>
+                <button
+                  class="btn btn-primary align-self-end"
+                  [disabled]="!newComment.trim()"
+                  (click)="addComment()"
+                >
+                  <i class="bi bi-send"></i>
+                </button>
+              </div>
+
+              @for (comment of comments(); track comment.id) {
+                <div class="d-flex gap-2 mb-3">
+                  <app-user-avatar
+                    [name]="comment.author.first_name + ' ' + comment.author.last_name"
+                    [avatarUrl]="comment.author.avatar"
+                    size="sm"
+                  />
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="fw-medium small">
+                        {{ comment.author.first_name }} {{ comment.author.last_name }}
+                      </span>
+                      <span class="text-muted small">{{ comment.created_at | timeAgo }}</span>
+                    </div>
+                    <p class="mb-0 small" style="white-space: pre-wrap;">{{ comment.content }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Activity Log -->
+            <div>
+              <h6 class="text-muted small text-uppercase mb-2">{{ 'taskDetail.activity' | translate }}</h6>
+              @for (log of activityLogs(); track log.id) {
+                <div class="d-flex gap-2 mb-2 small">
+                  <i class="bi bi-circle-fill text-muted" style="font-size: 6px; margin-top: 7px;"></i>
+                  <div>
+                    <span class="fw-medium">{{ log.user.first_name }} {{ log.user.last_name }}</span>
+                    {{ 'taskDetail.changed' | translate }} <strong>{{ log.field_name }}</strong>
+                    @if (log.old_value) {
+                      {{ 'taskDetail.from' | translate }} <em>{{ log.old_value }}</em>
+                    }
+                    {{ 'taskDetail.to' | translate }} <em>{{ log.new_value }}</em>
+                    <span class="text-muted ms-2">{{ log.created_at | timeAgo }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <h6 class="text-muted small text-uppercase mb-3">{{ 'taskDetail.details' | translate }}</h6>
+
+            <!-- Status -->
+            <div class="mb-3">
+              <label class="form-label small fw-medium">{{ 'taskDetail.status' | translate }}</label>
+              <select
+                class="form-select form-select-sm"
+                [ngModel]="task()!.status"
+                (ngModelChange)="updateField('status', $event)"
+              >
+                <option value="backlog">{{ 'status.backlog' | translate }}</option>
+                <option value="todo">{{ 'status.todo' | translate }}</option>
+                <option value="in_progress">{{ 'status.inProgress' | translate }}</option>
+                <option value="in_review">{{ 'status.inReview' | translate }}</option>
+                <option value="done">{{ 'status.done' | translate }}</option>
+              </select>
+            </div>
+
+            <!-- Assignee -->
+            <div class="mb-3">
+              <label class="form-label small fw-medium">{{ 'taskDetail.assignee' | translate }}</label>
+              <select
+                class="form-select form-select-sm"
+                [ngModel]="task()!.assignee?.id ?? ''"
+                (ngModelChange)="updateField('assignee', $event || null)"
+              >
+                <option value="">{{ 'taskDetail.unassigned' | translate }}</option>
+                @for (member of projectMembers(); track member.id) {
+                  <option [value]="member.id">{{ member.first_name }} {{ member.last_name }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Priority -->
+            <div class="mb-3">
+              <label class="form-label small fw-medium">{{ 'taskDetail.priority' | translate }}</label>
+              <select
+                class="form-select form-select-sm"
+                [ngModel]="task()!.priority"
+                (ngModelChange)="updateField('priority', $event)"
+              >
+                <option value="low">{{ 'priority.low' | translate }}</option>
+                <option value="medium">{{ 'priority.medium' | translate }}</option>
+                <option value="high">{{ 'priority.high' | translate }}</option>
+                <option value="critical">{{ 'priority.critical' | translate }}</option>
+              </select>
+            </div>
+
+            <!-- Due date -->
+            <div class="mb-3">
+              <label class="form-label small fw-medium">{{ 'taskDetail.dueDate' | translate }}</label>
+              <input
+                type="date"
+                class="form-control form-control-sm"
+                [ngModel]="task()!.due_date ?? ''"
+                (ngModelChange)="updateField('due_date', $event || null)"
+              />
+            </div>
+
+            <!-- Estimated -->
+            <div class="mb-3">
+              <label class="form-label small fw-medium">{{ 'taskDetail.estimatedHours' | translate }}</label>
+              <input
+                type="number"
+                min="0"
+                step="0.5"
+                class="form-control form-control-sm"
+                [ngModel]="task()!.estimated_hours ?? ''"
+                (ngModelChange)="updateField('estimated_hours', $event || null)"
+              />
+            </div>
+
+            <!-- Tags -->
+            <div class="mb-3">
+              <label class="form-label small fw-medium">{{ 'taskDetail.tags' | translate }}</label>
+              <div class="d-flex flex-wrap gap-1">
+                @for (tag of task()!.tags; track tag) {
+                  <span class="badge bg-light text-dark border">
+                    {{ tag }}
+                    <i
+                      class="bi bi-x ms-1"
+                      role="button"
+                      (click)="removeTag(tag)"
+                    ></i>
+                  </span>
+                }
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  style="max-width: 120px;"
+                  [placeholder]="'taskDetail.addTag' | translate"
+                  (keydown.enter)="addTag($event)"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Time Tracking -->
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <h6 class="text-muted small text-uppercase mb-3">{{ 'taskDetail.timeTracking' | translate }}</h6>
+            <div class="row text-center">
+              <div class="col-6">
+                <div class="small text-muted">{{ 'taskDetail.estimated' | translate }}</div>
+                <div class="fw-bold">{{ task()!.estimated_hours ?? '-' }}h</div>
+              </div>
+              <div class="col-6">
+                <div class="small text-muted">{{ 'taskDetail.actual' | translate }}</div>
+                <div class="fw-bold">{{ task()!.actual_hours ?? '-' }}h</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attachments -->
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <h6 class="text-muted small text-uppercase mb-3">{{ 'taskDetail.attachments' | translate }}</h6>
+            @for (att of attachments(); track att.id) {
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-paperclip"></i>
+                <a [href]="att.file" target="_blank" class="small text-truncate flex-grow-1">
+                  {{ att.original_filename }}
+                </a>
+                <span class="text-muted small">{{ formatSize(att.file_size) }}</span>
+              </div>
+            }
+            <label class="btn btn-sm btn-outline-secondary w-100 mt-2">
+              <i class="bi bi-upload me-1"></i>{{ 'taskDetail.upload' | translate }}
+              <input
+                type="file"
+                class="d-none"
+                (change)="uploadAttachment($event)"
+              />
+            </label>
+          </div>
+        </div>
+
+        <!-- Dates -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-body small text-muted">
+            <div class="mb-1">{{ 'taskDetail.created' | translate }}: {{ task()!.created_at | date:'medium' }}</div>
+            <div class="mb-1">{{ 'taskDetail.updated' | translate }}: {{ task()!.updated_at | date:'medium' }}</div>
+            @if (task()!.started_at) {
+              <div class="mb-1">{{ 'taskDetail.started' | translate }}: {{ task()!.started_at | date:'medium' }}</div>
+            }
+            @if (task()!.completed_at) {
+              <div>{{ 'taskDetail.completed' | translate }}: {{ task()!.completed_at | date:'medium' }}</div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

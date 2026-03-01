@@ -1,0 +1,118 @@
+@if (loading()) {
+  <app-loading-spinner />
+} @else {
+  <div class="container py-4" style="max-width: 800px;">
+    <nav class="mb-3">
+      <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a routerLink="/dashboard">{{ 'dashboard.title' | translate }}</a></li>
+        <li class="breadcrumb-item"><a routerLink="/admin">{{ 'admin.orgSettings' | translate }}</a></li>
+        <li class="breadcrumb-item active">{{ 'members.title' | translate }}</li>
+      </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="mb-0">{{ 'members.title' | translate }}</h4>
+      <button class="btn btn-primary btn-sm" (click)="showInvite = !showInvite">
+        <i class="bi bi-person-plus me-1"></i>{{ 'members.invite' | translate }}
+      </button>
+    </div>
+
+    @if (showInvite) {
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <h6>{{ 'members.inviteMember' | translate }}</h6>
+          <div class="row g-2 align-items-end">
+            <div class="col">
+              <label class="form-label small">{{ 'auth.email' | translate }}</label>
+              <input class="form-control form-control-sm" [(ngModel)]="inviteEmail" type="email" />
+            </div>
+            <div class="col-auto">
+              <label class="form-label small">{{ 'members.role' | translate }}</label>
+              <select class="form-select form-select-sm" [(ngModel)]="inviteRole">
+                <option value="member">{{ 'members.roleMember' | translate }}</option>
+                <option value="admin">{{ 'members.roleAdmin' | translate }}</option>
+              </select>
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-primary btn-sm" (click)="invite()" [disabled]="!inviteEmail">
+                {{ 'members.send' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="card border-0 shadow-sm">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>{{ 'members.memberCol' | translate }}</th>
+              <th>{{ 'members.role' | translate }}</th>
+              <th>{{ 'members.joined' | translate }}</th>
+              <th class="text-end">{{ 'members.actions' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (member of members(); track member.id) {
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <app-user-avatar
+                      [name]="member.user.first_name + ' ' + member.user.last_name"
+                      [avatarUrl]="member.user.avatar"
+                      size="sm"
+                    />
+                    <div>
+                      <div class="fw-medium small">
+                        {{ member.user.first_name }} {{ member.user.last_name }}
+                      </div>
+                      <div class="text-muted small">{{ member.user.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <select
+                    class="form-select form-select-sm"
+                    style="width: 110px;"
+                    [ngModel]="member.role"
+                    (ngModelChange)="changeRole(member, $event)"
+                    [disabled]="member.role === 'owner'"
+                  >
+                    <option value="owner" [disabled]="true">{{ 'members.roleOwner' | translate }}</option>
+                    <option value="admin">{{ 'members.roleAdmin' | translate }}</option>
+                    <option value="member">{{ 'members.roleMember' | translate }}</option>
+                  </select>
+                </td>
+                <td class="small text-muted">
+                  {{ formatDate(member.joined_at) }}
+                </td>
+                <td class="text-end">
+                  @if (member.role !== 'owner') {
+                    <button
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="removeMember(member)"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @if (confirmRemove()) {
+    <app-confirm-dialog
+      [title]="'members.removeTitle' | translate"
+      [message]="'members.removeMessage' | translate"
+      confirmClass="btn-danger"
+      (confirmed)="doRemove()"
+      (cancelled)="confirmRemove.set(null)"
+    />
+  }
+}

@@ -1,0 +1,17 @@
+:host {
+  display: block;
+}
+
+.description-area {
+  min-height: 80px;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+
+  &:hover {
+    background-color: var(--bg-tertiary) !important;
+  }
+}
+
+.card {
+  transition: box-shadow var(--transition-fast);
+}

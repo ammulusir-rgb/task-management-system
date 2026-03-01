@@ -1,0 +1,66 @@
+@if (loading()) {
+  <app-loading-spinner />
+} @else if (org()) {
+  <div class="container py-4" style="max-width: 720px;">
+    <nav class="mb-3">
+      <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a routerLink="/dashboard">{{ 'dashboard.title' | translate }}</a></li>
+        <li class="breadcrumb-item active">{{ 'admin.orgSettings' | translate }}</li>
+      </ol>
+    </nav>
+
+    <h4 class="mb-4">{{ 'admin.orgSettings' | translate }}</h4>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label fw-medium">{{ 'admin.orgName' | translate }}</label>
+          <input class="form-control" [(ngModel)]="name" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-medium">{{ 'admin.description' | translate }}</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="description"></textarea>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex gap-2 flex-wrap">
+            <a routerLink="/admin/members" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-people me-1"></i>{{ 'admin.manageMembers' | translate }}
+            </a>
+            <a routerLink="/admin/users" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-person-gear me-1"></i>{{ 'admin.manageUsers' | translate }}
+            </a>
+            <a routerLink="/admin/teams" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-people-fill me-1"></i>{{ 'admin.manageTeams' | translate }}
+            </a>
+          </div>
+          <button class="btn btn-primary btn-sm" (click)="save()" [disabled]="saving()">
+            {{ saving() ? ('common.saving' | translate) : ('common.saveChanges' | translate) }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="container py-4" style="max-width: 720px;">
+    <h4 class="mb-4">{{ 'admin.createOrg' | translate }}</h4>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label fw-medium">{{ 'admin.orgName' | translate }}</label>
+          <input class="form-control" [(ngModel)]="newOrgName" [placeholder]="'admin.orgNamePlaceholder' | translate" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-medium">{{ 'admin.description' | translate }}</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="newOrgDescription" [placeholder]="'admin.descriptionPlaceholder' | translate"></textarea>
+        </div>
+        <button
+          class="btn btn-primary"
+          (click)="createOrg()"
+          [disabled]="saving() || !newOrgName.trim()"
+        >
+          {{ saving() ? ('common.saving' | translate) : ('admin.createOrgBtn' | translate) }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,68 @@
+<div class="page-container">
+  <div class="mx-auto" style="max-width: 640px;">
+    <h2 class="mb-4">{{ isEdit() ? ('projectForm.editTitle' | translate) : ('projectForm.createTitle' | translate) }}</h2>
+
+    <div class="card-custom p-4">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label class="form-label">{{ 'projectForm.organization' | translate }}</label>
+          <select
+            class="form-select"
+            formControlName="organization"
+            [ngClass]="{ 'is-invalid': submitted() && form.get('organization')?.invalid }"
+          >
+            <option value="">{{ 'projectForm.selectOrg' | translate }}</option>
+            @for (org of organizations(); track org.id) {
+              <option [value]="org.id">{{ org.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">{{ 'projectForm.name' | translate }}</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="name"
+            [placeholder]="'projectForm.namePlaceholder' | translate"
+            [ngClass]="{ 'is-invalid': submitted() && form.get('name')?.invalid }"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">{{ 'projectForm.prefix' | translate }}</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="prefix"
+            placeholder="e.g. MAR"
+            maxlength="5"
+            style="width: 120px;"
+            [ngClass]="{ 'is-invalid': submitted() && form.get('prefix')?.invalid }"
+          />
+          <small class="text-muted">{{ 'projectForm.prefixHint' | translate }}</small>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">{{ 'projectForm.description' | translate }}</label>
+          <textarea
+            class="form-control"
+            formControlName="description"
+            rows="3"
+            [placeholder]="'projectForm.descriptionPlaceholder' | translate"
+          ></textarea>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            }
+            {{ isEdit() ? ('projectForm.update' | translate) : ('projectForm.create' | translate) }}
+          </button>
+          <a routerLink="/projects" class="btn btn-outline-secondary">{{ 'common.cancel' | translate }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
