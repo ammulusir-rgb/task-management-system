@@ -1,17 +1,15 @@
 """
 Views for the Reports app.
-All endpoints are read-only and project-scoped.
+Endpoint definitions only — all business logic lives in managers.py.
 """
 
 from django.http import HttpResponse
-from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from apps.projects.models import Project, ProjectMember
-
+from .managers import report_manager
 from .serializers import (
     ActivityHeatmapSerializer,
     AssigneeWorkloadSerializer,
@@ -24,7 +22,6 @@ from .serializers import (
     TagDistributionSerializer,
     VelocityPointSerializer,
 )
-from .services import ReportService
 
 
 class ProjectReportViewSet(ViewSet):
@@ -35,166 +32,85 @@ class ProjectReportViewSet(ViewSet):
 
     permission_classes = [IsAuthenticated]
 
-    def _get_project(self, request, project_id):
-        """Retrieve project and verify membership."""
-        try:
-            project = Project.objects.get(id=project_id, deleted_at__isnull=True)
-        except Project.DoesNotExist:
-            return None, Response(
-                {"error": {"code": "not_found", "message": "Project not found."}},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+    # ── Summary ──
 
-        is_member = ProjectMember.objects.filter(
-            project=project, user=request.user
-        ).exists()
-        is_org_member = project.organization.members.filter(
-            user=request.user
-        ).exists()
-
-        if not (is_member or is_org_member or request.user.is_staff):
-            return None, Response(
-                {"error": {"code": "forbidden", "message": "Not a project member."}},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        return project, None
-
-    # ------------------------------------------------------------------ #
-    # Summary
-    # ------------------------------------------------------------------ #
     @action(detail=False, methods=["get"], url_path="summary")
     def summary(self, request, project_id=None):
-        """Project-level KPIs."""
-        project, err = self._get_project(request, project_id)
-        if err:
-            return err
+        project = report_manager.get_verified_project(request.user, project_id)
+        data = report_manager.get_summary(project)
+        return Response(ProjectSummarySerializer(data).data)
 
-        data = ReportService(project).get_project_summary()
-        serializer = ProjectSummarySerializer(data)
-        return Response(serializer.data)
+    # ── Distribution Charts ──
 
-    # ------------------------------------------------------------------ #
-    # Distribution Charts
-    # ------------------------------------------------------------------ #
     @action(detail=False, methods=["get"], url_path="tasks-by-status")
     def tasks_by_status(self, request, project_id=None):
-        project, err = self._get_project(request, project_id)
-        if err:
-            return err
-
-        data = ReportService(project).get_tasks_by_status()
-        serializer = StatusDistributionSerializer(data, many=True)
-        return Response(serializer.data)
+        project = report_manager.get_verified_project(request.user, project_id)
+        data = report_manager.get_tasks_by_status(project)
+        return Response(StatusDistributionSerializer(data, many=True).data)
 
     @action(detail=False, methods=["get"], url_path="tasks-by-priority")
     def tasks_by_priority(self, request, project_id=None):
-        project, err = self._get_project(request, project_id)
-        if err:
-            return err
-
-        data = ReportService(project).get_tasks_by_priority()
-        serializer = PriorityDistributionSerializer(data, many=True)
-        return Response(serializer.data)
+        project = report_manager.get_verified_project(request.user, project_id)
+        data = report_manager.get_tasks_by_priority(project)
+        return Response(PriorityDistributionSerializer(data, many=True).data)
 
     @action(detail=False, methods=["get"], url_path="tasks-by-assignee")
     def tasks_by_assignee(self, request, project_id=None):
-        project, err = self._get_project(request, project_id)
-        if err:
-            return err
-
-        data = ReportService(project).get_tasks_by_assignee()
-        serializer = AssigneeWorkloadSerializer(data, many=True)
-        return Response(serializer.data)
+        project = report_manager.get_verified_project(request.user, project_id)
+        data = report_manager.get_tasks_by_assignee(project)
+        return Response(AssigneeWorkloadSerializer(data, many=True).data)
 
     @action(detail=False, methods=["get"], url_path="tasks-by-label")
     def tasks_by_label(self, request, project_id=None):
-        project, err = self._get_project(request, project_id)
-        if err:
-            return err
+        project = report_manager.get_verified_project(request.user, project_id)
+        data = report_manager.get_tasks_by_label(project)
+        return Response(TagDistributionSerializer(data, many=True).data)
 
-        data = ReportService(project).get_tasks_by_label()
-        serializer = TagDistributionSerializer(data, many=True)
-        return Response(serializer.data)
+    # ── Burndown / Burnup ──
 
-    # ------------------------------------------------------------------ #
-    # Burndown / Burnup
-    # ------------------------------------------------------------------ #
     @action(detail=False, methods=["get"], url_path="burndown")
     def burndown(self, request, project_id=None):
-        project, err = self._get_project(request, project_id)
-        if err:
-            return err
+        project = report_manager.get_verified_project(request.user, project_id)
+        days = min(max(int(request.query_params.get("days", 30)), 7), 365)
+        data = report_manager.get_burndown(project, days=days)
+        return Response(BurndownPointSerializer(data, many=True).data)
 
-        days = int(request.query_params.get("days", 30))
-        days = min(max(days, 7), 365)
+    # ── Velocity & Throughput ──
 
-        data = ReportService(project).get_burndown_data(days=days)
-        serializer = BurndownPointSerializer(data, many=True)
-        return Response(serializer.data)
-
-    # ------------------------------------------------------------------ #
-    # Velocity & Throughput
-    # ------------------------------------------------------------------ #
     @action(detail=False, methods=["get"], url_path="velocity")
     def velocity(self, request, project_id=None):
-        project, err = self._get_project(request, project_id)
-        if err:
-            return err
-
-        weeks = int(request.query_params.get("weeks", 12))
-        weeks = min(max(weeks, 4), 52)
-
-        data = ReportService(project).get_velocity(weeks=weeks)
-        serializer = VelocityPointSerializer(data, many=True)
-        return Response(serializer.data)
+        project = report_manager.get_verified_project(request.user, project_id)
+        weeks = min(max(int(request.query_params.get("weeks", 12)), 4), 52)
+        data = report_manager.get_velocity(project, weeks=weeks)
+        return Response(VelocityPointSerializer(data, many=True).data)
 
     @action(detail=False, methods=["get"], url_path="monthly-throughput")
     def monthly_throughput(self, request, project_id=None):
-        project, err = self._get_project(request, project_id)
-        if err:
-            return err
+        project = report_manager.get_verified_project(request.user, project_id)
+        data = report_manager.get_monthly_throughput(project)
+        return Response(MonthlyThroughputSerializer(data, many=True).data)
 
-        data = ReportService(project).get_monthly_throughput()
-        serializer = MonthlyThroughputSerializer(data, many=True)
-        return Response(serializer.data)
+    # ── Activity ──
 
-    # ------------------------------------------------------------------ #
-    # Activity
-    # ------------------------------------------------------------------ #
     @action(detail=False, methods=["get"], url_path="activity-heatmap")
     def activity_heatmap(self, request, project_id=None):
-        project, err = self._get_project(request, project_id)
-        if err:
-            return err
-
-        days = int(request.query_params.get("days", 90))
-        days = min(max(days, 30), 365)
-
-        data = ReportService(project).get_activity_heatmap(days=days)
-        serializer = ActivityHeatmapSerializer(data, many=True)
-        return Response(serializer.data)
+        project = report_manager.get_verified_project(request.user, project_id)
+        days = min(max(int(request.query_params.get("days", 90)), 30), 365)
+        data = report_manager.get_activity_heatmap(project, days=days)
+        return Response(ActivityHeatmapSerializer(data, many=True).data)
 
     @action(detail=False, methods=["get"], url_path="activity-by-day")
     def activity_by_day(self, request, project_id=None):
-        project, err = self._get_project(request, project_id)
-        if err:
-            return err
+        project = report_manager.get_verified_project(request.user, project_id)
+        data = report_manager.get_activity_by_day(project)
+        return Response(DayOfWeekActivitySerializer(data, many=True).data)
 
-        data = ReportService(project).get_activity_by_day_of_week()
-        serializer = DayOfWeekActivitySerializer(data, many=True)
-        return Response(serializer.data)
+    # ── CSV Export ──
 
-    # ------------------------------------------------------------------ #
-    # CSV Export
-    # ------------------------------------------------------------------ #
     @action(detail=False, methods=["get"], url_path="export-csv")
     def export_csv(self, request, project_id=None):
-        project, err = self._get_project(request, project_id)
-        if err:
-            return err
-
-        csv_content = ReportService(project).export_tasks_csv()
+        project = report_manager.get_verified_project(request.user, project_id)
+        csv_content = report_manager.export_csv(project)
         response = HttpResponse(csv_content, content_type="text/csv")
         response["Content-Disposition"] = (
             f'attachment; filename="{project.slug}-tasks.csv"'

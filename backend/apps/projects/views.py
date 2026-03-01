@@ -1,16 +1,14 @@
 """
 Views for Projects, Boards, and Columns.
+Endpoint definitions only — all business logic lives in managers.py.
 """
 
-from django.contrib.auth import get_user_model
-from django.db import transaction
-from django.db.models import Count
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import Board, Column, Project, ProjectMember, ProjectMemberRole, ProjectStatus
-from .permissions import IsProjectAdmin, IsProjectMember
+from .managers import project_manager
+from .permissions import IsProjectAdmin
 from .serializers import (
     AddProjectMemberSerializer,
     BoardSerializer,
@@ -21,28 +19,15 @@ from .serializers import (
     ProjectSerializer,
 )
 
-User = get_user_model()
-
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    """
-    CRUD for projects. Users see only projects they are members of.
-    """
+    """CRUD for projects. Users see only projects they are members of."""
 
     serializer_class = ProjectSerializer
     permission_classes = [permissions.IsAuthenticated]
-    lookup_field = "pk"
 
     def get_queryset(self):
-        return (
-            Project.objects.filter(
-                members__user=self.request.user,
-                members__is_active=True,
-            )
-            .select_related("organization", "created_by")
-            .annotate(_task_count=Count("tasks"))
-            .distinct()
-        )
+        return project_manager.get_user_projects(self.request.user)
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -55,36 +40,30 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
     def perform_destroy(self, instance):
-        instance.status = ProjectStatus.DELETED
-        instance.soft_delete()
+        project_manager.soft_delete_project(instance)
 
     @action(detail=True, methods=["post"], url_path="archive")
     def archive(self, request, pk=None):
         """Archive a project."""
         project = self.get_object()
-        project.status = ProjectStatus.ARCHIVED
-        project.save(update_fields=["status"])
-        return Response(ProjectSerializer(project).data)
+        updated = project_manager.archive_project(project)
+        return Response(ProjectSerializer(updated).data)
 
     @action(detail=True, methods=["post"], url_path="restore")
     def restore(self, request, pk=None):
         """Restore an archived project."""
         project = self.get_object()
-        project.status = ProjectStatus.ACTIVE
-        project.save(update_fields=["status"])
-        return Response(ProjectSerializer(project).data)
+        updated = project_manager.restore_project(project)
+        return Response(ProjectSerializer(updated).data)
 
-    # ── Member Management ──
+    # ── Member Management ──────────────────────────────────────────────────────
 
     @action(detail=True, methods=["get"], url_path="members")
     def list_members(self, request, pk=None):
         """List project members."""
         project = self.get_object()
-        members = ProjectMember.objects.filter(
-            project=project
-        ).select_related("user")
-        serializer = ProjectMemberSerializer(members, many=True)
-        return Response(serializer.data)
+        members = project_manager.list_members(project)
+        return Response(ProjectMemberSerializer(members, many=True).data)
 
     @action(detail=True, methods=["post"], url_path="members/add")
     def add_member(self, request, pk=None):
@@ -92,97 +71,44 @@ class ProjectViewSet(viewsets.ModelViewSet):
         project = self.get_object()
         serializer = AddProjectMemberSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        user_id = serializer.validated_data["user_id"]
-        role = serializer.validated_data["role"]
-
-        try:
-            user = User.objects.get(id=user_id, is_active=True)
-        except User.DoesNotExist:
-            return Response(
-                {"error": {"code": "user_not_found", "message": "User not found."}},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        if ProjectMember.objects.filter(project=project, user=user).exists():
-            return Response(
-                {"error": {"code": "already_member", "message": "User is already a member."}},
-                status=status.HTTP_409_CONFLICT,
-            )
-
-        member = ProjectMember.objects.create(
-            project=project,
-            user=user,
-            role=role,
+        member = project_manager.add_member(
+            project,
+            user_id=str(serializer.validated_data["user_id"]),
+            role=serializer.validated_data["role"],
         )
-        return Response(
-            ProjectMemberSerializer(member).data,
-            status=status.HTTP_201_CREATED,
-        )
+        return Response(ProjectMemberSerializer(member).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["delete"], url_path=r"members/(?P<member_id>[^/.]+)")
     def remove_member(self, request, pk=None, member_id=None):
         """Remove a member from the project."""
         project = self.get_object()
-        try:
-            member = ProjectMember.objects.get(id=member_id, project=project)
-        except ProjectMember.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        member.is_active = False
-        member.save(update_fields=["is_active"])
+        project_manager.remove_member(project, member_id)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class BoardViewSet(viewsets.ModelViewSet):
-    """
-    Board management within a project.
-    """
+    """Board management within a project."""
 
     serializer_class = BoardSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return (
-            Board.objects.filter(
-                project__members__user=self.request.user,
-                project__members__is_active=True,
-            )
-            .select_related("project")
-            .prefetch_related("columns")
-            .distinct()
-        )
+        return project_manager.get_boards_queryset(self.request.user)
 
 
 class ColumnViewSet(viewsets.ModelViewSet):
-    """
-    Column management within a board.
-    Includes reorder endpoint for drag-and-drop.
-    """
+    """Column management within a board. Includes reorder endpoint."""
 
     serializer_class = ColumnSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return (
-            Column.objects.filter(
-                board__project__members__user=self.request.user,
-                board__project__members__is_active=True,
-            )
-            .select_related("board", "board__project")
-            .distinct()
-        )
+        return project_manager.get_columns_queryset(self.request.user)
 
     @action(detail=False, methods=["post"], url_path="reorder")
     def reorder(self, request):
         """Bulk reorder columns by providing ordered column IDs."""
         serializer = ColumnReorderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        column_ids = serializer.validated_data["column_ids"]
-
-        with transaction.atomic():
-            for position, column_id in enumerate(column_ids):
-                Column.objects.filter(id=column_id).update(position=position)
-
+        project_manager.reorder_columns(serializer.validated_data["column_ids"])
         return Response({"message": "Columns reordered successfully."})

@@ -14,6 +14,36 @@ from rest_framework.views import exception_handler
 logger = logging.getLogger(__name__)
 
 
+# ── Domain Exceptions (used by managers to signal business-logic errors) ──────
+
+class NotFoundError(APIException):
+    """Raised when a requested resource does not exist."""
+    status_code = 404
+    default_code = "not_found"
+    default_detail = "The requested resource was not found."
+
+
+class ConflictError(APIException):
+    """Raised when an operation conflicts with existing state (e.g. duplicate)."""
+    status_code = 409
+    default_code = "conflict"
+    default_detail = "A conflict occurred with the current state of the resource."
+
+
+class ForbiddenError(APIException):
+    """Raised when a user is authenticated but lacks permission."""
+    status_code = 403
+    default_code = "forbidden"
+    default_detail = "You do not have permission to perform this action."
+
+
+class BusinessRuleError(APIException):
+    """Raised when a business rule is violated (e.g. last owner cannot be removed)."""
+    status_code = 400
+    default_code = "business_rule_violation"
+    default_detail = "This action violates a business rule."
+
+
 def custom_exception_handler(exc, context):
     """
     Custom exception handler that provides consistent error response format.
