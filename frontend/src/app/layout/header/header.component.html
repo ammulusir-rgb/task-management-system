@@ -28,16 +28,31 @@
       }
     </a>
 
+    <!-- Theme toggle -->
+    <button
+      class="btn btn-link p-0 text-secondary theme-toggle"
+      (click)="themeService.toggle()"
+      [title]="i18n.t('header.themeToggle')"
+    >
+      @if (themeService.mode() === 'light') {
+        <i class="bi bi-sun fs-5"></i>
+      } @else if (themeService.mode() === 'dark') {
+        <i class="bi bi-moon-stars fs-5"></i>
+      } @else {
+        <i class="bi bi-circle-half fs-5"></i>
+      }
+    </button>
+
     <!-- Language switcher -->
-    <div class="dropdown">
+    <div class="dropdown" [class.show]="langDropdownOpen()">
       <button
         class="btn btn-link p-0 text-secondary"
-        data-bs-toggle="dropdown"
+        (click)="toggleLangDropdown($event)"
         aria-label="Switch language"
       >
         <span class="fs-5">{{ languageLabels[i18n.locale()].flag }}</span>
       </button>
-      <ul class="dropdown-menu dropdown-menu-end lang-dropdown">
+      <ul class="dropdown-menu dropdown-menu-end lang-dropdown" [class.show]="langDropdownOpen()">
         @for (loc of supportedLocales; track loc.code) {
           <li>
             <button
@@ -54,10 +69,10 @@
     </div>
 
     <!-- User menu -->
-    <div class="dropdown">
+    <div class="dropdown" [class.show]="userDropdownOpen()">
       <button
         class="btn btn-link p-0 d-flex align-items-center gap-2 text-decoration-none"
-        data-bs-toggle="dropdown"
+        (click)="toggleUserDropdown($event)"
       >
         <app-user-avatar
           [name]="currentUser()?.full_name ?? ''"
@@ -69,9 +84,9 @@
         </span>
         <i class="bi bi-chevron-down text-muted small"></i>
       </button>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li><a class="dropdown-item" routerLink="/profile"><i class="bi bi-person me-2"></i>{{ i18n.t('header.profile') }}</a></li>
-        <li><a class="dropdown-item" routerLink="/admin"><i class="bi bi-gear me-2"></i>{{ i18n.t('header.settings') }}</a></li>
+      <ul class="dropdown-menu dropdown-menu-end" [class.show]="userDropdownOpen()">
+        <li><a class="dropdown-item" routerLink="/profile" (click)="closeDropdowns()"><i class="bi bi-person me-2"></i>{{ i18n.t('header.profile') }}</a></li>
+        <li><a class="dropdown-item" routerLink="/admin" (click)="closeDropdowns()"><i class="bi bi-gear me-2"></i>{{ i18n.t('header.settings') }}</a></li>
         <li><hr class="dropdown-divider"></li>
         <li>
           <button class="dropdown-item text-danger" (click)="authService.logout()">

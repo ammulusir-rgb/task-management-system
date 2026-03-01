@@ -50,6 +50,109 @@
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+
+  /* Bootstrap overrides for dark mode */
+  .form-control,
+  .form-select {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+
+    &:focus {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      border-color: var(--primary);
+    }
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+  }
+
+  .form-check-input {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+  }
+
+  .input-group-text {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+  }
+
+  .card,
+  .card-custom {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+    &:hover {
+      background-color: var(--primary);
+      color: #fff;
+    }
+  }
+
+  .btn-outline-secondary {
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+    &:hover {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+  }
+
+  .table {
+    --bs-table-bg: var(--bg-primary);
+    --bs-table-color: var(--text-primary);
+    --bs-table-border-color: var(--border-color);
+    --bs-table-striped-bg: var(--bg-secondary);
+    --bs-table-hover-bg: var(--bg-tertiary);
+  }
+
+  .modal-content {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+
+  .breadcrumb-item {
+    color: var(--text-secondary);
+    &.active { color: var(--text-muted); }
+    & + .breadcrumb-item::before { color: var(--text-muted); }
+    a { color: var(--primary); }
+  }
+
+  .text-dark {
+    color: var(--text-primary) !important;
+  }
+
+  .text-secondary {
+    color: var(--text-secondary) !important;
+  }
+
+  .text-muted {
+    color: var(--text-muted) !important;
+  }
+
+  .bg-transparent {
+    background-color: transparent !important;
+  }
+
+  .shadow-sm {
+    box-shadow: var(--shadow-sm) !important;
+  }
+
+  .spinner-overlay {
+    background: rgba(15, 23, 42, 0.7);
+  }
+
+  .badge.bg-primary-subtle {
+    background-color: rgba(37, 99, 235, 0.2) !important;
+  }
 }
 
 /* ----- Reset / Base ----- */

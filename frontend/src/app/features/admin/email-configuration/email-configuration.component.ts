@@ -123,14 +123,17 @@ export class EmailConfigurationComponent implements OnInit {
     if (this.configForm.invalid) return;
 
     this.saving.set(true);
-    const formData = this.configForm.getRawValue();
+    const rawFormData = this.configForm.getRawValue();
 
+    // Create proper form data object with optional password fields
+    const formData: any = { ...rawFormData };
+    
     // Only include password if it's changed
-    if (!formData.imap_password) {
-      delete formData.imap_password;
+    if (!rawFormData.imap_password) {
+      formData.imap_password = undefined;
     }
-    if (!formData.smtp_password) {
-      delete formData.smtp_password;
+    if (!rawFormData.smtp_password) {
+      formData.smtp_password = undefined;
     }
 
     const saveMethod = this.config() 
@@ -192,7 +195,17 @@ export class EmailConfigurationComponent implements OnInit {
     this.editingRule.set(rule || null);
     
     if (rule) {
-      this.ruleForm.patchValue(rule);
+      // Handle object fields properly for form
+      const formValues = {
+        ...rule,
+        target_project: typeof rule.target_project === 'object' 
+          ? rule.target_project?.id || '' 
+          : rule.target_project || '',
+        default_assignee: typeof rule.default_assignee === 'object'
+          ? rule.default_assignee?.id || ''
+          : rule.default_assignee || ''
+      };
+      this.ruleForm.patchValue(formValues);
     } else {
       this.ruleForm.reset({
         rule_type: 'subject_contains',

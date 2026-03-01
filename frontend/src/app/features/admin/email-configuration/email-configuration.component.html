@@ -70,7 +70,7 @@
                   type="password" 
                   class="form-control" 
                   formControlName="imap_password"
-                  [placeholder]="config()?.imap_password ? '••••••••' : 'Enter password...'"
+                  [placeholder]="config()?.imap_password_set ? '••••••••' : 'Enter password...'"
                 />
               </div>
             </div>
@@ -140,7 +140,7 @@
                   type="password" 
                   class="form-control" 
                   formControlName="smtp_password"
-                  [placeholder]="config()?.smtp_password ? '••••••••' : 'Enter password...'"
+                  [placeholder]="config()?.smtp_password_set ? '••••••••' : 'Enter password...'"
                 />
               </div>
             </div>
@@ -265,7 +265,7 @@
                   <td>{{ rule.name }}</td>
                   <td>{{ rule.rule_type | titlecase }}</td>
                   <td><code>{{ rule.rule_value }}</code></td>
-                  <td>{{ rule.target_project?.name || 'Unknown Project' }}</td>
+                  <td>{{ rule.target_project.name || 'Unknown Project' }}</td>
                   <td>
                     @if (rule.is_active) {
                       <span class="badge bg-success">{{ 'common.active' | translate }}</span>

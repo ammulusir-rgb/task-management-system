@@ -73,11 +73,17 @@ export const ES_TRANSLATIONS: Record<string, string> = {
   'sidebar.myTasks': 'Mis tareas',
   'sidebar.notifications': 'Notificaciones',
   'sidebar.settings': 'Configuración',
+  'sidebar.administration': 'Administración',
+  'sidebar.teams': 'Equipos',
+  'sidebar.users': 'Usuarios',
+  'sidebar.smtp': 'Config. SMTP',
+  'sidebar.imap': 'Config. IMAP',
 
   // ── Header ──
   'header.profile': 'Perfil',
   'header.settings': 'Configuración',
   'header.signOut': 'Cerrar sesión',
+  'header.themeToggle': 'Cambiar tema (Claro / Oscuro / Auto)',
 
   // ── Profile ──
   'profile.title': 'Mi perfil',
@@ -475,4 +481,12 @@ export const ES_TRANSLATIONS: Record<string, string> = {
   'emailConfig.ruleDeleteFailed': 'Error al eliminar regla',
   'emailConfig.confirmDeleteRule': '¿Estás seguro de que quieres eliminar esta regla?',
   'emailConfig.noRules': 'Aún no hay reglas de email configuradas',
+
+  // ── Admin Config Cards ──
+  'admin.teamsCardDesc': 'Crear y gestionar equipos',
+  'admin.usersCardDesc': 'Gestionar usuarios y roles',
+  'admin.smtpConfig': 'Configuración SMTP',
+  'admin.smtpCardDesc': 'Configuración de correo saliente',
+  'admin.imapConfig': 'Configuración IMAP',
+  'admin.imapCardDesc': 'Configuración de correo entrante',
 };

@@ -11,6 +11,47 @@
 
     <h4 class="mb-4">{{ 'admin.orgSettings' | translate }}</h4>
 
+    <!-- Configuration Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-sm-6 col-lg-3">
+        <a routerLink="/admin/teams" class="card border-0 shadow-sm text-decoration-none h-100 card-hover">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-people-fill fs-2 text-primary mb-2 d-block"></i>
+            <h6 class="fw-semibold mb-1">{{ 'admin.manageTeams' | translate }}</h6>
+            <small class="text-muted">{{ 'admin.teamsCardDesc' | translate }}</small>
+          </div>
+        </a>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <a routerLink="/admin/users" class="card border-0 shadow-sm text-decoration-none h-100 card-hover">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-person-gear fs-2 text-success mb-2 d-block"></i>
+            <h6 class="fw-semibold mb-1">{{ 'admin.manageUsers' | translate }}</h6>
+            <small class="text-muted">{{ 'admin.usersCardDesc' | translate }}</small>
+          </div>
+        </a>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <a routerLink="/admin/email" fragment="smtp" class="card border-0 shadow-sm text-decoration-none h-100 card-hover">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-send fs-2 text-warning mb-2 d-block"></i>
+            <h6 class="fw-semibold mb-1">{{ 'admin.smtpConfig' | translate }}</h6>
+            <small class="text-muted">{{ 'admin.smtpCardDesc' | translate }}</small>
+          </div>
+        </a>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <a routerLink="/admin/email" fragment="imap" class="card border-0 shadow-sm text-decoration-none h-100 card-hover">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-inbox fs-2 text-info mb-2 d-block"></i>
+            <h6 class="fw-semibold mb-1">{{ 'admin.imapConfig' | translate }}</h6>
+            <small class="text-muted">{{ 'admin.imapCardDesc' | translate }}</small>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Organization Details -->
     <div class="card border-0 shadow-sm">
       <div class="card-body">
         <div class="mb-3">
@@ -22,17 +63,9 @@
           <textarea class="form-control" rows="3" [(ngModel)]="description"></textarea>
         </div>
         <div class="d-flex justify-content-between align-items-center">
-          <div class="d-flex gap-2 flex-wrap">
-            <a routerLink="/admin/members" class="btn btn-outline-primary btn-sm">
-              <i class="bi bi-people me-1"></i>{{ 'admin.manageMembers' | translate }}
-            </a>
-            <a routerLink="/admin/users" class="btn btn-outline-secondary btn-sm">
-              <i class="bi bi-person-gear me-1"></i>{{ 'admin.manageUsers' | translate }}
-            </a>
-            <a routerLink="/admin/teams" class="btn btn-outline-secondary btn-sm">
-              <i class="bi bi-people-fill me-1"></i>{{ 'admin.manageTeams' | translate }}
-            </a>
-          </div>
+          <a routerLink="/admin/members" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-people me-1"></i>{{ 'admin.manageMembers' | translate }}
+          </a>
           <button class="btn btn-primary btn-sm" (click)="save()" [disabled]="saving()">
             {{ saving() ? ('common.saving' | translate) : ('common.saveChanges' | translate) }}
           </button>

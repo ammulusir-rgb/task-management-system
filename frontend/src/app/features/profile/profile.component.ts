@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '@core/services/auth.service';
 import { TranslationService } from '@core/services/translation.service';
+import { ThemeService, ThemeMode } from '@core/services/theme.service';
 import { User } from '@models/index';
 import { UserAvatarComponent } from '@shared/components/user-avatar/user-avatar.component';
 import { TranslatePipe } from '@shared/pipes/translate.pipe';
@@ -16,6 +17,7 @@ import { TranslatePipe } from '@shared/pipes/translate.pipe';
 export class ProfileComponent implements OnInit {
   private authService = inject(AuthService);
   i18n = inject(TranslationService);
+  private themeService = inject(ThemeService);
 
   user = this.authService.currentUser;
   saving = signal(false);
@@ -37,7 +39,7 @@ export class ProfileComponent implements OnInit {
   passwordSuccess = signal(false);
 
   // Preferences
-  selectedTheme = signal<'light' | 'dark' | 'auto'>('light');
+  selectedTheme = signal<ThemeMode>('light');
   selectedLanguage = signal<'en' | 'es' | 'fr'>('en');
   emailNotifications = signal(true);
   savingPreferences = signal(false);
@@ -125,44 +127,22 @@ export class ProfileComponent implements OnInit {
 
   // Preferences Methods
   loadPreferences(): void {
-    const theme = localStorage.getItem('app-theme') as 'light' | 'dark' | 'auto' || 'light';
+    this.selectedTheme.set(this.themeService.mode());
     const language = localStorage.getItem('app-language') as 'en' | 'es' | 'fr' || 'en';
     const notifications = localStorage.getItem('email-notifications') !== 'false';
 
-    this.selectedTheme.set(theme);
     this.selectedLanguage.set(language);
     this.emailNotifications.set(notifications);
-
-    // Apply theme
-    this.applyTheme(theme);
-    
-    // Set language
-    this.i18n.changeLanguage(language);
   }
 
-  onThemeChange(theme: 'light' | 'dark' | 'auto'): void {
+  onThemeChange(theme: ThemeMode): void {
     this.selectedTheme.set(theme);
-    this.applyTheme(theme);
+    this.themeService.setMode(theme);
   }
 
   onLanguageChange(language: 'en' | 'es' | 'fr'): void {
     this.selectedLanguage.set(language);
     this.i18n.changeLanguage(language);
-  }
-
-  applyTheme(theme: 'light' | 'dark' | 'auto'): void {
-    const body = document.body;
-    
-    // Remove existing theme classes
-    body.classList.remove('theme-light', 'theme-dark');
-    
-    if (theme === 'auto') {
-      // Use system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
-    } else {
-      body.classList.add(`theme-${theme}`);
-    }
   }
 
   savePreferences(): void {
@@ -171,14 +151,11 @@ export class ProfileComponent implements OnInit {
     this.preferencesError.set('');
 
     try {
-      // Save to localStorage
-      localStorage.setItem('app-theme', this.selectedTheme());
+      // Save to localStorage via services
+      this.themeService.setMode(this.selectedTheme());
+      this.i18n.changeLanguage(this.selectedLanguage());
       localStorage.setItem('app-language', this.selectedLanguage());
       localStorage.setItem('email-notifications', String(this.emailNotifications()));
-
-      // Apply changes immediately
-      this.applyTheme(this.selectedTheme());
-      this.i18n.changeLanguage(this.selectedLanguage());
 
       setTimeout(() => {
         this.savingPreferences.set(false);

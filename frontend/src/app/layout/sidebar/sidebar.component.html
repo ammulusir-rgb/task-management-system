@@ -39,12 +39,39 @@
     }
   </nav>
 
-  <!-- Bottom section -->
+  <!-- Admin section -->
   <div class="sidebar-footer">
-    <a routerLink="/admin" routerLinkActive="active" class="nav-item" [title]="i18n.t('sidebar.settings')">
+    @if (!collapsed()) {
+      <div class="sidebar-section-label">{{ i18n.t('sidebar.administration') }}</div>
+    }
+    <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item" [title]="i18n.t('sidebar.settings')">
       <i class="bi bi-gear"></i>
       @if (!collapsed()) {
         <span>{{ i18n.t('sidebar.settings') }}</span>
+      }
+    </a>
+    <a routerLink="/admin/teams" routerLinkActive="active" class="nav-item" [title]="i18n.t('sidebar.teams')">
+      <i class="bi bi-people-fill"></i>
+      @if (!collapsed()) {
+        <span>{{ i18n.t('sidebar.teams') }}</span>
+      }
+    </a>
+    <a routerLink="/admin/users" routerLinkActive="active" class="nav-item" [title]="i18n.t('sidebar.users')">
+      <i class="bi bi-person-gear"></i>
+      @if (!collapsed()) {
+        <span>{{ i18n.t('sidebar.users') }}</span>
+      }
+    </a>
+    <a routerLink="/admin/email" routerLinkActive="active" class="nav-item" [title]="i18n.t('sidebar.smtp')">
+      <i class="bi bi-send"></i>
+      @if (!collapsed()) {
+        <span>{{ i18n.t('sidebar.smtp') }}</span>
+      }
+    </a>
+    <a routerLink="/admin/email" fragment="imap" class="nav-item" [title]="i18n.t('sidebar.imap')">
+      <i class="bi bi-inbox"></i>
+      @if (!collapsed()) {
+        <span>{{ i18n.t('sidebar.imap') }}</span>
       }
     </a>
   </div>

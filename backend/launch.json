@@ -1,0 +1,139 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        // ── Backend ──────────────────────────────────────────────
+        {
+            "name": "Backend: Django Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/manage.py",
+            "args": [
+                "runserver",
+                "0.0.0.0:8000",
+                "--skip-checks",
+                "--noreload"
+            ],
+            "django": true,
+            "cwd": "${workspaceFolder}/backend",
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "config.settings.local"
+            },
+            // D:\My\Saas\backend\.venv\.gitignore
+            "python": "${workspaceFolder}/backend/backend/.venv/Scripts/python.exe",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Backend: Setup DB (migrate + superuser)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/setup_db.py",
+            "cwd": "${workspaceFolder}/backend",
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "config.settings.local"
+            },
+            "python": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Backend: Create PG Database",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/setup_pg.py",
+            "cwd": "${workspaceFolder}/backend",
+            "python": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Backend: Django Shell",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/manage.py",
+            "args": [
+                "shell"
+            ],
+            "django": true,
+            "cwd": "${workspaceFolder}/backend",
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "config.settings.local"
+            },
+            "python": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Backend: Run Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests/",
+                "-v",
+                "--tb=short"
+            ],
+            "cwd": "${workspaceFolder}/backend",
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "config.settings.local"
+            },
+            "python": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+            "console": "integratedTerminal"
+        },
+        // ── Frontend ─────────────────────────────────────────────
+        {
+            "name": "Frontend: Angular Dev Server",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "npx",
+            "runtimeArgs": [
+                "ng",
+                "serve",
+                "--proxy-config",
+                "proxy.conf.json",
+                "--port",
+                "4200"
+            ],
+            "cwd": "${workspaceFolder}/frontend",
+            "console": "integratedTerminal",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
+        {
+            "name": "Frontend: Open in Chrome",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:4200",
+            "webRoot": "${workspaceFolder}/frontend/src",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///./*": "${webRoot}/*"
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Full Stack (Backend + Frontend)",
+            "configurations": [
+                "Backend: Django Server",
+                "Frontend: Angular Dev Server"
+            ],
+            "stopAll": true,
+            "presentation": {
+                "group": "fullstack",
+                "order": 1
+            }
+        },
+        {
+            "name": "Full Stack + Chrome Debug",
+            "configurations": [
+                "Backend: Django Server",
+                "Frontend: Angular Dev Server",
+                "Frontend: Open in Chrome"
+            ],
+            "stopAll": true,
+            "presentation": {
+                "group": "fullstack",
+                "order": 2
+            }
+        }
+    ]
+}
