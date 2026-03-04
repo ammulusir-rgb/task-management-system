@@ -9,23 +9,8 @@ import logging
 from collections import defaultdict
 from datetime import timedelta
 
-from django.db.models import (
-    Avg,
-    Case,
-    Count,
-    F,
-    FloatField,
-    Q,
-    Sum,
-    Value,
-    When,
-)
-from django.db.models.functions import (
-    ExtractWeekDay,
-    TruncDate,
-    TruncMonth,
-    TruncWeek,
-)
+from django.db.models import (Avg, Case, Count, F, FloatField, Q, Sum, Value, When,)
+from django.db.models.functions import (ExtractWeekDay, TruncDate, TruncMonth, TruncWeek,)
 from django.utils import timezone
 
 from apps.tasks.models import ActivityLog, Task, TaskStatus

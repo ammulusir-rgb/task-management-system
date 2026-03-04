@@ -28,25 +28,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    email = models.EmailField(
-        unique=True,
-        max_length=255,
-        db_index=True,
-        error_messages={"unique": "A user with that email already exists."},
-    )
+    email = models.EmailField(unique=True, max_length=255, db_index=True,  error_messages={"unique": "A user with that email already exists."},)
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
-    role = models.CharField(
-        max_length=20,
-        choices=UserRole.choices,
-        default=UserRole.MEMBER,
-        db_index=True,
-    )
-    avatar = models.ImageField(
-        upload_to=file_upload_path,
-        blank=True,
-        null=True,
-    )
+    role = models.CharField(max_length=20, choices=UserRole.choices, default=UserRole.MEMBER, db_index=True,)
+    avatar = models.ImageField(upload_to=file_upload_path,  blank=True, null=True,)
     phone = models.CharField(max_length=20, blank=True, default="")
     job_title = models.CharField(max_length=100, blank=True, default="")
 
